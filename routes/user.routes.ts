@@ -24,7 +24,9 @@ router.post("/addgeninfo",userController.addgeneralinfo)
 router.post("/addadminister",userController.addadminister)
 // dailyschdule
 router.post("/dailyschdule",userController.dailyschdule)
+// get profile data
 router.post("/getprofile",userController.getprofile)
+
 
 
 

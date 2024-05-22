@@ -33,6 +33,7 @@ class CommonController {
             console.log(e);
         }
     }
+    
     errorMessage(msg: string, res: Response) {
        try{
         return res.status(400).send({

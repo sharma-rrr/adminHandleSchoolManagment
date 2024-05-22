@@ -151,14 +151,10 @@ async dataupdate(payload:any,res:Response){
         }else{
             commonController.errorMessage("user not found",res)
         }
-    
     }catch(err){
         console.log("err",err);
-        
         commonController.errorMessage("occured err",res)
     }
-
-
     
 }
 
@@ -224,6 +220,7 @@ const user=await db.generalinfos.findOne({
 })
 if(user){
     commonController.errorMessage("school name alredy exist",res)
+
 }else{
     const addgeninfo =await db.generalinfos.create({
         SchoolName,address , phone ,email,website,inTime,outTime
@@ -233,9 +230,9 @@ if(user){
 
 }catch(Error){
     console.log("ERR",Error);
-    
     commonController.errorMessage("occured err",res)
 }
+
 }
 
 // add administer 

@@ -11,7 +11,6 @@ async addspecification(req,res){
     await codeController.addSpecification({
         specification
     },res)
-
     }catch(err){
         commonController.errorMessage("occured error",res)
     }
@@ -115,6 +114,8 @@ async addadminister(req,res){
         commonController.errorMessage("occured errpr",res)
     }
 }
+
+
 async getalldata(req,res){
     await codeController.getalldata({
 
@@ -135,7 +136,7 @@ async dailyschdule(req,res){
     }
 }
 
-
+// get profile data
 async getprofile(req,res){
     const{id}=req.body;
     try{

@@ -1,5 +1,6 @@
 import { verify } from 'crypto';
 import express from 'express';
+import { Op } from 'sequelize';
 
  import userController from "../controllers/user.controller";
 
@@ -17,15 +18,31 @@ import express from 'express';
  })
 
 const router=express.Router();
-//  router.post("/register",userController.register);
-// add specification
-router.post("/addgeninfo",userController.addgeneralinfo)
-// add administer
-router.post("/addadminister",userController.addadminister)
-// dailyschdule
-router.post("/dailyschdule",userController.dailyschdule)
-// get profile data
-router.post("/getprofile",userController.getprofile)
+// TBD app api's
+// sign up
+router.post("/signup",userController.signup)
+// login user
+router.post("/login",userController.loginuser)
+// user verify
+router.post("/userverify",userController.verify)
+// forgot password
+router.post("/resent-otp",userController.forgot)
+// change password
+router.post("/update_password",userController.updatePassword)
+// router.post("/usergamedata",userController.usergamedata)
+
+
+//create game
+router.post('/creategames', userController.createGame);
+
+
+
+
+
+
+
+
+
 
 
 

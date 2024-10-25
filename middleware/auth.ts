@@ -12,6 +12,8 @@ declare global {
     }
 }
 export default module.exports=(req:Request,res:Response,next:NextFunction)=>{
+    console.log(req,"req here");
+    
     const authHeader=req.headers.authorization;
     const error=new Error();
 

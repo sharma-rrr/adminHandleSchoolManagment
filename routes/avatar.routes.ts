@@ -1,6 +1,5 @@
 import userController from "../controllers/user.controller";
 import { Request, Response, NextFunction } from "express";
-
 const express = require("express");
 const app = express();
 

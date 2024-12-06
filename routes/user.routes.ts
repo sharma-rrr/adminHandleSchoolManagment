@@ -3,7 +3,7 @@ import express from 'express';
 import { Op } from 'sequelize';
 
  import userController from "../controllers/user.controller";
-
+ const OneSignal = require('onesignal-node');    
  const multer = require("multer");
  var storage = multer.diskStorage({
   destination: function (req: any, file:any, cb: any){
@@ -19,7 +19,7 @@ import { Op } from 'sequelize';
 
 const router=express.Router();
 // TBD app api's
-// sign up
+// sign up and set in nodeimaler send otp 
 router.post("/signup",userController.signup)
 // login user
 router.post("/login",userController.loginuser)
@@ -31,18 +31,16 @@ router.post("/resent-otp",userController.forgot)
 router.post("/update_password",userController.updatePassword)
 // router.post("/usergamedata",userController.usergamedata)
 
-
-//create game
+//create game testing
 router.post('/creategames', userController.createGame);
+// set in notification
+router.post('/sendnotification', userController.sendnotification);
 
+router.post('/dash', userController.dash);
 
+router.post('/test', userController.data);
 
-
-
-
-
-
-
+// create notification
 
 
 

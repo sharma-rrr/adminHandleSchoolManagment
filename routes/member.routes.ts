@@ -8,6 +8,7 @@ const router=express.Router();
 
 // get profile  api tbd
 router.post("/get-Profile",userController.profileGet)
+
 // get all ui  / get all leadrboard data   
 router.post('/getallui', userController.getui);
 
@@ -19,8 +20,6 @@ router.post('/getuserreward', userController.getallredeem);
 
 
 // upadte name 
-
-
 router.post("/updateimage",userController.updatename)
 
 // add notification
@@ -44,6 +43,7 @@ router.post("/getUserGameData",userController.getUserGameData)
 router.post("/add_coins",userController.add_coins)
 // send link to email
 router.post("/sendlink",userController.sendlink)
+// router.post('/sendnotification', userController.sendnotification);
 
   
 export default router;  

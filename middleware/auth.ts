@@ -1,8 +1,7 @@
-import { Request, Response, NextFunction, } from "express";
+import {Request, Response, NextFunction,} from "express";
 import { json } from "sequelize/types";
 const jwt=require('jsonwebtoken');
-// const { SECRET_KEY } = require('../config');
-
+// const { SECRET_KEY } = require('../config');z
 const {SECRET_KEY} =require('../appconfig');
 declare global {
     namespace Express {
@@ -18,16 +17,15 @@ export default module.exports=(req:Request,res:Response,next:NextFunction)=>{
     const error=new Error();
 
     //error.status=403;
-
     if(authHeader){
         const token=authHeader.split('Bearer ')[1];
         if(token){
             try{
-                    const user=jwt.verify(token,SECRET_KEY);
+                   const user=jwt.verify(token,SECRET_KEY);
                     console.log("header user",user);
                     req.user=user;
                     return next();
-            }catch(e){
+            }catch(e){ 
                 res.status(403);
                 error.message="invalid/expired token";
                 return next(error);
@@ -38,6 +36,6 @@ export default module.exports=(req:Request,res:Response,next:NextFunction)=>{
         return next(error);
     }
     res.status(403);
-    error.message='authorization header must be provided';
+    error.message='authorization header musst be provided';
     return next(error);
 };

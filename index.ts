@@ -10,7 +10,9 @@ import memberRoute from './routes/member.routes';
 import adminRoute from './routes/admin.routes';
 import avtarroute from './routes/avatar.routes'
 import db from './models';
-
+import axios from 'axios';
+const OneSignal = require('onesignal-node'); // Import the OneSignal SDK
+// Initialize the client with your OneSignal App ID and API key
 
 const app = express();
 app.options('*', cors());
@@ -23,6 +25,28 @@ app.use(cors())
 app.get('/products/:id', function (req, res, next) {
   res.json({msg: 'This is CORS-enabled for all origins!'})
 })
+
+
+// With middleware
+app.use('/verify', function (req, res, next) {
+    console.log("Authenticate and Redirect")
+    res.redirect('/user');
+    next();
+});
+
+app.get('/user', function (req, res) {
+    res.send("User Page");
+});
+
+
+ // REDIRECT FUNTION 
+ // Without middleware
+app.get('/', function (req, res) {
+    res.redirect('/test');
+});
+app.get('/test', function (req, res) {
+    res.send("Redirected to test Page");
+  });
 
 app.use(express.json());
 app.use(express.static('resources'));
@@ -83,7 +107,6 @@ const sendLoginCredentials = (toEmail: string, username: string, password: strin
       });
 
       pdfDoc.end(); // Finalize the PDF file
-
       // Create a transporter for sending the email
       const transporter = nodemailer.createTransport({
           service: 'gmail',
@@ -94,7 +117,6 @@ const sendLoginCredentials = (toEmail: string, username: string, password: strin
               pass: 'hzyo wuwt nlkf eznu'
           },
       });
-
       const mailOptions = {
           from: 'rajni@airai.games',
           to: toEmail,
@@ -121,24 +143,6 @@ const sendLoginCredentials = (toEmail: string, username: string, password: strin
       }, 1000); // Wait 1 second to ensure the PDF is saved
   });
 };
-
-
-
-// Example route to trigger sending the email
-app.post('/send-credentials', (req: Request, res: Response) => {
-    const { email, username, password } = req.body;
-    sendLoginCredentials(email, username, password);
-    res.status(200).send('Email sent successfully');
-});
-
-
-
-
-
-
-
-
-
 
 // get photo
 app.use("/avatars", express.static(__dirname + "/avatars"));

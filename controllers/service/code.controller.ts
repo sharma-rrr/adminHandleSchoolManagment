@@ -5,6 +5,15 @@ var otpGenerator = require('otp-generator');
 const QRCode = require('qrcode');
 const multer = require('multer');
 import { Op } from 'sequelize';
+import axios, { responseEncoding } from 'axios';
+import * as OneSignal from 'onesignal-node';  // Ensure OneSignal is imported
+
+// use for notification
+//OneSignal App ID
+
+// const BASE_URL = "https://onesignal.com/api/v1";
+
+
 
 var nodemailer = require ('nodemailer');
 import { v4 as uuidv4 } from "uuid";
@@ -15,10 +24,6 @@ bcryptjs.genSalt(10, function (err, salt) {
         // Store hash in your password DB.
     });
 });
-
-
-
-// var bcryptjs= require('bcryptjs');
 
 import db from "../../models"
 const MyQuery = db.sequelize;
@@ -37,6 +42,15 @@ import { sign } from 'crypto';
 import { waitForDebugger } from 'inspector';
 import e from 'express';
 import nodemailer from 'nodemailer';
+import codeController from '../../code.controller';
+import * as express from 'express';
+const admin = require('firebase-admin');
+// const serviceAccount = require('path/to/your/serviceAccountKey.json');
+
+// admin.initializeApp({
+//     credential: admin.credential.cert(serviceAccount),
+//   });
+  
 
 const transporter = nodemailer.createTransport({
     service: 'gmail',
@@ -47,13 +61,6 @@ const transporter = nodemailer.createTransport({
         pass: 'hzyo wuwt nlkf eznu'
     },
 });
-
-
-
-
-
-
-  
 class CodeController {
     ///Section User Start
 
@@ -78,16 +85,10 @@ async adminLogin(payload: any, res: Response) {
 
 
 
-
-
-
-
-
-
 // getall data from users
 async getalldata(payload:any,res:Response){
     var sql = `select * from Users `;
-    var result = await MyQuery.query(sql, { type: QueryTypes.SELECT });
+    var result = await MyQuery.query(sql, { type: QueryTypes.SELECT }); 
     commonController.successMessage(result,"get all data successfully",res)
 }
 
@@ -118,9 +119,8 @@ async getalldata(payload:any,res:Response){
     // sign up user 
     async signssup(payload: any, res: Response) {
         const { name, email, password, logintype } = payload;
-    
-        try {
-            // Check if the user already exists
+        try { 
+            // Check if the user already existss
             const existingUser = await db.Newusers.findOne({ where: { email } });
     
             if (existingUser) {
@@ -213,10 +213,11 @@ async getalldata(payload:any,res:Response){
     // login user
     async addnewuser(payload: any, res: Response) {
         const { name, email, contact, password, logintype } = payload;
-    
         try {
             // Find user by email
-            const user = await db.Newusers.findOne({ where: { email } });
+            const user = await db.Newusers.findOne({ where: {
+                 email 
+                } });
     
             if (user) {
                 if (user.active == 1) {
@@ -226,9 +227,8 @@ async getalldata(payload:any,res:Response){
                 // Verify the password
                 const isPasswordMatch = await bcrypt.compare(password, user.password);
                 if (!isPasswordMatch) {
-                    return commonController.errorMessage("Password does not match", res);
+                    return commonController.errorMessage("Password does not match", res); 
                 }
-    
                 const token = await jwt.sign(
                     { email, name },
                     process.env.TOKEN_SECRET
@@ -248,7 +248,7 @@ async getalldata(payload:any,res:Response){
                     name,
                     email,
                     contact,
-                    password: hashedPassword,
+                    password: hashedPassword,   
                     logintype
                 });
     
@@ -300,7 +300,7 @@ async getalldata(payload:any,res:Response){
 async updatepassword(payload: any, res: Response) {
     const { email, newPassword,otpValue } = payload;
     try {
-        const user = await db.Newusers.findOne({
+        const user = await db.Newusers.findOne({ 
             where: {
                  email
                  }
@@ -329,7 +329,6 @@ async updatepassword(payload: any, res: Response) {
         }else{
             commonController.successMessage1("Invalid or expired OTP",res)
         }
-        
     } catch (error) {
         console.error(error); 
         return commonController.errorMessage("An error occurred while updating password", res);
@@ -337,15 +336,14 @@ async updatepassword(payload: any, res: Response) {
 }
 
 // get profile data
-
-
 async profileGet(payload: any, res: Response) {
     const { email } = payload;
-  
     try {
       // Find the user by email and exclude password from the result
       const user = await db.Newusers.findOne({
-        where: { email },
+        where: { 
+            email
+         },
         attributes: { exclude: ['password'] }
       });
   
@@ -375,11 +373,9 @@ async profileGet(payload: any, res: Response) {
         points, 
         level, 
       };
-  console.log(userProfile,"?????");
-  
+       console.log(userProfile,"?????");
       // Return success message with the updated user profile
       return commonController.successMessage(userProfile, "User Profile Retrieved Successfully", res);
-  
     } catch (error) {
       console.error("Error occurred:", error);
       return commonController.errorMessage("An error occurred while retrieving the profile", res);
@@ -449,7 +445,6 @@ async getNotification(payload: any, res: Response) {
 async createGame(payload:any, res:Response){
     try {
         const { gamename, gameimage, points, linkhomeimage, linkdetail, favorite, players, description } = payload;
-  
         const newGame = await  db.Gamedetails.create({
           gamename,
           gameimage,
@@ -460,18 +455,15 @@ async createGame(payload:any, res:Response){
           players,
           description
         });
-  
         return res.status(201).json({ message: 'Game created successfully', data: newGame });
       } catch (error) {
         console.error('Error creating game:', error);
         return res.status(500).json({ message: 'An error occurred while creating the game' });
       }
-    
-  
 }
 
 // Fetch data from Gamedetails and Dashboards tables
-async getui(payload: any, res: Response) {
+async getui(payload: any, res: Response) { 
     try {
         const games = await db.Gamedetails.findAll();
         const dashboards = await db.Dashboards.findAll();
@@ -511,6 +503,16 @@ async getui(payload: any, res: Response) {
         const allTimeData = await MyQuery.query(sql1, {
             type: QueryTypes.SELECT,
         });
+   // get top users
+    const sql5 =`SELECT usergames.gameId, COUNT(usergames.gameId) AS play_count, gamedetails.gamename,
+     gamedetails.gameimage, gamedetails.points, gamedetails.linkhomeimage, gamedetails.favorite,
+      gamedetails.players, gamedetails.description FROM usergames LEFT JOIN gamedetails ON usergames.gameId
+       = gamedetails.id GROUP BY usergames.gameId ORDER BY play_count DESC;`
+    console.log(sql5,"sql,,,.,.");
+    
+    const  trendinggames= await MyQuery.query(sql5, {
+        type: QueryTypes.SELECT,
+    });
 
         // Initialize the leaderboard object
         const leaderboard = {
@@ -519,7 +521,7 @@ async getui(payload: any, res: Response) {
         };
 
         // Send the response with all data
-        commonController.successMessage({ games, dashboards, rewards, leaderboard }, "Get all UI data", res);
+        commonController.successMessage({ games, dashboards, rewards, leaderboard,trendinggames }, "Get all UI data", res);
     } catch (err) {
         console.error("Error fetching UI data:", err); 
         commonController.errorMessage("An error occurred while fetching UI data", res);
@@ -528,21 +530,19 @@ async getui(payload: any, res: Response) {
 
 
 
+
 // user play game data
 async usergamedata(payload: any, res: Response) {
     const { email, Points, gameId } = payload;
-  
     try {
       const user = await db.Newusers.findOne({
         where: {
           email,
         },
       });
-  
       if (!user) {
         return commonController.successMessage1('User not found', res);
       }
-  
       const playgame = await db.UserGames.findOne({
         where: {
           userId: user.id,
@@ -608,7 +608,6 @@ async addCoins(payload: any, res: Response) {
                 Email 
             }
         });
-
         if (user) {
             const updatedCoins = user.coins + newCoins;
             await user.update({
@@ -639,7 +638,6 @@ async sendlink(payload:any,res:Response){
             const generateRandomString = (length: number): string => {
                 return randomBytes(length).toString('hex'); 
             };
-    
             const randomString = generateRandomString(16); 
             user.resetToken = randomString;
             user.resetTokenExpiration = Date.now() + 3600000; // 1 hour
@@ -664,10 +662,6 @@ async sendlink(payload:any,res:Response){
 
 
 
- 
-    
-
-  
       // get profile data
       async getprofilssedata(payload: any, res: Response) {
         const { id } = payload;
@@ -715,10 +709,9 @@ async sendlink(payload:any,res:Response){
             newusers.id = :id;
         `;
         var result = await MyQuery.query(sql, {
-          type: QueryTypes.SELECT,
+          type: QueryTypes.SELECT,  
           replacements: { id }
         });
-      
         // Process the result to aggregate data
         const profileData = {
           Email: result[0]?.Email,
@@ -857,8 +850,7 @@ async sendlink(payload:any,res:Response){
 // }
 
 async signup(payload: any, res: Response) {
-    const { name, email, password, logintype, username,referralCode } = payload;
-
+    const { name, email, password, logintype, username,referralCode,fcmToken } = payload;
     // Predefined names array
     const names: string[] = [
         "John Smith", "Jane Doe", "Alice Johnson", "Bob Brown",
@@ -876,16 +868,15 @@ async signup(payload: any, res: Response) {
         const randomIndex = Math.floor(Math.random() * names.length);
         return names[randomIndex];
     };
-
     try {
-
-
         // If username is not provided, assign a random one
         const assignedUsername = username || getRandomName();
-
         // Check if the email already exists
-        const existingUser = await db.Newusers.findOne({ where: { email } });
-
+        const existingUser = await db.Newusers.findOne({
+             where: {    
+             email 
+            } 
+        });
         if (existingUser) {
             // If user exists, check their verification status
             if (existingUser.active == 1) {
@@ -895,12 +886,13 @@ async signup(payload: any, res: Response) {
             } else if (existingUser.active == 0) {
                 // User is not yet verified, resend OTP
                 const otpEntry = await db.UserOtps.findOne({
-                    where: { userId: existingUser.id },
+                    where: { 
+                        userId: existingUser.id 
+                    },
                 });
-
                 // Generate new OTP
                 const otpValue = await commonController.generateOtp();
-                if (!otpEntry) {
+                if (!otpEntry) { 
                     // Create a new OTP entry if not found
                     await db.UserOtps.create({
                         userId: existingUser.id,
@@ -916,7 +908,6 @@ async signup(payload: any, res: Response) {
                         { where: { userId: existingUser.id } }
                     );
                     commonController.sendEmail(email,"Otp Code for Verification",otpValue)
-                    
                     return commonController.successMessage1("OTP has been updated and sent for verification.", res);
                 }
             }
@@ -925,7 +916,6 @@ async signup(payload: any, res: Response) {
         // Generate a 6-digit random referral code and ensure it's unique
         let referralCode = "";
         let isUnique = false;
-
         while (!isUnique) {
             referralCode = Math.floor(100000 + Math.random() * 900000).toString();
             const referralExists = await db.Newusers.findOne({
@@ -935,7 +925,6 @@ async signup(payload: any, res: Response) {
                 isUnique = true; // Exit the loop if the code is unique
             }
         }
-
         if (logintype == 1) {
             const newUser = await db.Newusers.create({
                 email,
@@ -943,7 +932,9 @@ async signup(payload: any, res: Response) {
                 username: assignedUsername, // Use the assigned or provided username
                 logintype,
                 active: 0, // Default state for new users
-                referralCode: referralCode // Set the generated referral code
+                referralCode: referralCode ,// Set the generated referral code,
+                fcmToken
+            
             });
             const token = jwt.sign(
                 { email, id: newUser.id },
@@ -951,8 +942,6 @@ async signup(payload: any, res: Response) {
             );
             return commonController.successMessage(token, "User Created Successfully", res);
         }
-
-        // If the user does not exist, create a new user
         const hashedPassword = await hash(password, 10);
         const newUser = await db.Newusers.create({
             email,
@@ -961,9 +950,10 @@ async signup(payload: any, res: Response) {
             username: assignedUsername, // Use the assigned or provided username
             logintype,
             active: 0, // Default state for new users
-            referralCode: referralCode // Set the generated referral code
-        });
+            referralCode: referralCode, // Set the generated referral code,
+            fcmToken
 
+        });
         // Generate and save OTP for the new user
         const otpValue = await commonController.generateOtp();
         await db.UserOtps.create({
@@ -974,43 +964,40 @@ async signup(payload: any, res: Response) {
 
         // send email code
         commonController.sendEmail(email,"Otp Code for Verification",otpValue)
-
        // Find the referrer by matching their referralCode
-const referrer = await db.Newusers.findOne({ where: { referralCode: payload.referralCode } });
-if (referrer) {
-    // Increase refCount for the referrer
-    const currentRefCount = referrer.refCount || 0;
+    const referrer = await db.Newusers.findOne({ where: { referralCode: payload.referralCode } });
+     if (referrer) {
+       // Increase refCount for the referrer
+        const currentRefCount = referrer.refCount || 0;
     // Update refCount for referrer (only for the original referrer, not the new user)
-    await referrer.update({
+       await referrer.update({
         refCount: currentRefCount + 1
-    });
-    console.log(`Referral code used, updated refCount for referrer: ${currentRefCount + 1}`);
-    } else {
-    console.log("Referrer not found or referral code is invalid");
-    }
-        return commonController.successMessage1("User Created Successfully", res);
-    } catch (err) {
-        console.error("Error during signup:", err);
+       });
+      console.log(`Referral code used, updated refCount for referrer: ${currentRefCount + 1}`);
+       } else {
+      console.log("Referrer not found or referral code is invalid");
+     }
+          return commonController.successMessage1("User Created Successfully", res);
+     } catch (err) {
+         console.error("Error during signup:", err);
         return commonController.errorMessage("An error occurred during signup", res);
-    }
-}
-
-
-
+     }
+  }
 
 
 // LOGIN USER 
 async loginuser(pay: any, res: Response) {
-    const { email, password,logintype } = pay;
+    const { email, password,logintype,fcmToken } = pay;
     console.log("pay", pay);
     try {
         // Check if user exists
-        const user = await db.Newusers.findOne({
-            where: { email }
+        const user = await db.Newusers.findOne({ 
+            where: {
+                 email 
+                }
         });
         if(!user){
             return commonController.successMessage1("User not exist", res);
- 
         }
         if (user.active == 2) {
             return commonController.successMessage1("User Blocked", res);
@@ -1019,7 +1006,9 @@ async loginuser(pay: any, res: Response) {
                 { email, id: user.id },
                 process.env.TOKEN_SECRET,
             );
-            return commonController.successMessage(token,"User Login Successfully", res);
+               // Update and save the fcmToken
+               await user.update({ fcmToken });
+            return commonController.successMessage(token,"User Login Successfully", res);// google /fb 
         }else {
             if(user.active != 1){
                 return commonController.successMessage1("User Not Verify", res);
@@ -1033,8 +1022,12 @@ async loginuser(pay: any, res: Response) {
                 { email, id: user.id,name:user.name },
                 process.env.TOKEN_SECRET,
             );
+
+            // Save FCM token if it exists
+                // Update and save the fcmToken
+                await user.update({ fcmToken });
             // Send success response with the token
-            return commonController.successMessage(token, "User Login Successfully", res);
+            return commonController.successMessage(token, "User Login Successfully", res);// mail with password login 
         }
     } catch (err) {
         console.error("Error occurred during login:", err);
@@ -1046,35 +1039,35 @@ async loginuser(pay: any, res: Response) {
 // verify 
 async verify(payload: any, res: Response) {
     const { email, otpValue } = payload;
-
     try {
         // Check if the user exists
-        const user = await db.Newusers.findOne({ where: { email } });
-
+        const user = await db.Newusers.findOne({
+             where: {
+             email 
+            }
+         });
         if (!user) {
             return commonController.successMessage1("User does not exist", res);
         }
 
         // Check if the OTP exists for the user
         const otpEntry = await db.UserOtps.findOne({
-            where: { userId: user.id, otpValue }
+            where: {
+                 userId: user.id, otpValue 
+                }
         });
-
         if (otpEntry) {
             await otpEntry.update({
                 active:1
             })
-            
             await user.update({active:1})
              // Generate a JWT token
              const token = jwt.sign(
                 { email: user.email, id: user.id },
                 process.env.TOKEN_SECRET,
             );
-
             return commonController.successMessage(token, "Email verified successfully", res);
         }
-
         return commonController.successMessage1("Invalid or expired OTP", res);
     } catch (err) {
         console.error("Error during email verification:", err);
@@ -1090,16 +1083,16 @@ async  forgot(payload: any, res: Response) {
     const { email } = payload;
     try {
         // Check if the user exists
-        const user = await db.Newusers.findOne({ where: { email } });
-
+        const user = await db.Newusers.findOne({
+             where: {
+                 email
+                 } 
+            });
         if (!user) {
             return commonController.successMessage1("User Does Not Exist", res);
         }
-
         const otpEntry = await db.UserOtps.findOne({ where: { userId: user.id } });
-
         const otpValue = await commonController.generateOtp();
-
         if (otpEntry) {
             await otpEntry.update({
                 active: 0, 
@@ -1112,11 +1105,11 @@ async  forgot(payload: any, res: Response) {
                 active: 0,
             });
         }
-
         await user.update({
-            active: 0,
+            active: 0, 
         });
 
+        commonController.sendEmail(email,"Otp Code for Verification",otpValue)
         return commonController.successMessage1( "OTP Sent Successfully", res);
     } catch (err) {
         console.error("Error during password reset request:", err);
@@ -1126,9 +1119,11 @@ async  forgot(payload: any, res: Response) {
 
 
 
+
+// send otp email
 async  sendOtpEmail(to: string, otpValue: string) {
     const mailOptions = {
-        from: '"Your App Name" <your-email@example.com>', // Sender address
+        from: '"Your App Name"<your-email@example.com>', // Sender address
         to: to, // Recipient email
         subject: 'Your OTP Code', // Subject line
         text: `Your OTP code is ${otpValue}.`, // Plain text body
@@ -1233,11 +1228,12 @@ async getreward (payload: any, res: Response) {
 
 async redeemReward(payload: any, res: Response) {
     const { amount, name, rewardId, fullName, phoneNumber, pinCode, address, id } = payload; 
-    
     try {
         // Find the user by ID
         const user = await db.Newusers.findOne({
-            where: { id }
+            where: {
+                 id 
+                }
         });
         console.log(user, "user......");
 
@@ -1247,10 +1243,11 @@ async redeemReward(payload: any, res: Response) {
 
         // Find the reward by ID
         const reward = await db.Rewards.findOne({
-            where: { id: rewardId }
+            where: { 
+                id: rewardId 
+            }
         });
         console.log(reward, "reward data");
-
         if (!reward) {
             return commonController.successMessage1("Reward not found.", res);
         }
@@ -1258,7 +1255,6 @@ async redeemReward(payload: any, res: Response) {
         // Check if the user has enough coins to redeem the reward
         if (user.coins >= reward.points) {
             const updatedPoints = user.coins - reward.points;
-
             // Update user's coins in the database
             await db.Newusers.update(
                 { coins: updatedPoints },
@@ -1291,9 +1287,6 @@ async redeemReward(payload: any, res: Response) {
 
 
 
-
-
-
  // get redeem history 
  async getallredeem(payload: any, res: Response) {
     const { id } = payload;
@@ -1303,9 +1296,7 @@ async redeemReward(payload: any, res: Response) {
                 userId: id,
             },
         });
-
         const awardIds = redemptions.map(redeem => redeem.rewardId);
-
         const rewards = await db.Rewards.findAll({
             where: {
                 id: awardIds,
@@ -1322,11 +1313,8 @@ async redeemReward(payload: any, res: Response) {
                 status: redeem.status, // Include the status
                 image: reward ? reward.image : null, // Add the reward image
                 createdAt: redeem.createdAt, // Include createdAt
-
-                
             };
         });
-
         return commonController.successMessage(redemptionWithImages, "Fetched redemption records successfully", res);
     } catch (error) {
         console.error(error, "error");
@@ -1336,44 +1324,38 @@ async redeemReward(payload: any, res: Response) {
 
 
 
-
+// get top  user
 async getTopUser(payload: any, res: Response) {
     const { email } = payload;
     const lastWeekDate = new Date();
     lastWeekDate.setDate(lastWeekDate.getDate() - 7); // Calculate the date from one week ago
-
     try {
         // Define your SQL query with a JOIN to fetch name and userImage
-        const sql = `
+        const sql =`
             SELECT ug.userId, SUM(ug.points) AS totalCoins, nu.name, nu.userImage
             FROM usergames ug
             JOIN newusers nu ON nu.id = ug.userId
             WHERE ug.createdAt >= ?
             GROUP BY ug.userId, nu.name, nu.userImage
             ORDER BY totalCoins DESC
-            LIMIT 10
-        `;
+            LIMIT 10`;
         
         // Execute the query using the MyQuery object
         const sevenDayData = await MyQuery.query(sql, {
             replacements: [lastWeekDate], // Use replacements to safely insert the date
             type: QueryTypes.SELECT,
         });
-
         const sql1 = `
         SELECT ug.userId, SUM(ug.points) AS totalCoins, nu.name, nu.userImage
         FROM usergames ug
         JOIN newusers nu ON nu.id = ug.userId
-        GROUP BY ug.userId, nu.name, nu.userImage
-        ORDER BY totalCoins DESC
+        GROUP BY ug.userId, nu.name, nu.userImage 
         LIMIT 10
     `;
-    
     // Execute the query using the MyQuery object
-    const allTimeData = await MyQuery.query(sql1, {
+       const allTimeData = await MyQuery.query(sql1, {
         type: QueryTypes.SELECT,
-    });
-
+        });
         // Return success message with results
         return commonController.successMessage({sevenDayData,allTimeData}, "Data retrieved successfully", res);
     } catch (err) {
@@ -1384,12 +1366,97 @@ async getTopUser(payload: any, res: Response) {
 
 
 
+// send notification 
+async sendnotification(payload: any, res: Response) {
+    const { heading, message } = payload;
+    try {
+        const appId = process.env.ONESIGNAL_APP_ID as string; 
+        const apiKey = process.env.API_KEY as string; 
+        const client = new OneSignal.Client(appId, apiKey);
+        const notification = {
+            headings: { en: `${heading}` },
+            contents: { en: `${message}` },
+            included_segments: ["Active Subscriptions"],
+            data: { postId: '123' },
+            chrome_web_icon: "https://www.flaticon.com/free-icon/notification_2645897?term=notification&page=1&position=1&origin=tag&related_id=2645897", // URL of the icon
 
+        };
 
+        // Sending the notification to OneSignal
+        const res1 = await client.createNotification(notification);
+        await db.Notifications.create({
+            heading: heading,
+            message: message,
+            isRead: 'sent', 
+            sentAt: new Date(),
+        });
+        commonController.successMessage(res1, "Notification sent successfully", res);
+        return;
+    } catch (Err) {
+        console.error('Error occurred:', Err);
+        commonController.errorMessage("An error occurred", res);
+    }
+}
+ 
 
+async dash(payload:any,res:Response){
+    const { heading, image, imagelink}= payload;
+    try{
+        const admin = await db.Dashboards.create({
+            heading, image, imagelink
+        })
+        commonController.successMessage(admin, "add ", res);
+
+    }catch(err){
+        commonController.errorMessage("occured error ",res)
+    }
 
 }
 
+
+async data (paylod:any,res:Response){
+    try{
+        const a = ["ritu", "depu", "preet", "sukh", "sagg"];
+        for (let i = 0; i < a.length; i++) {
+            if (a[i] === "depu") { // Checks if the current element is "depu"
+                a[i] = "sdhhj"; // Replaces "depu" with "sdhhj"
+            }
+            console.log(a[i]); // Logs each element in the array
+        }
+
+         }catch(err){  
+        commonController.errorMessage("occured error",res)
+    }
+}
+
+
+
+async rr(payload:any,res:Response){
+    try{
+        // array lenght  
+    const abc = ["shiv","deep","preet","reet"]
+    // console.log(abc.length,"ajshjdhj");
+
+     // array at 
+     console.log(abc.at(1),"araay at abc");
+     for (let i = 0; i < abc.length; i++) {
+    //    console.log(`Iteration: ${i + 1}, Length: ${abc.length}, Element: ${abc[i]}`);
+        console.log(abc[i], "check length");
+       if(abc[i] === "deep"){
+        console.log("yes here");
+        abc[i] = "neet"
+       }else if(abc[i] == "preet")
+       console.log(abc," here ,,,..,.>>>>>");
+    }
+    }catch(error){    
+        commonController.errorMessage("occured error",res)
+    }
+}
+
+   
+
+    
+}
     
 export default new CodeController();
 // export default new hello();

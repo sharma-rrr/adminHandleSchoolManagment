@@ -14,6 +14,7 @@ interface UserAttributes{
   username:string;
   refCount:number;
   level:number;
+  fcmToken:string;
 
   
 
@@ -32,11 +33,9 @@ module.exports = (sequelize:any, DataTypes:any) => {
     username!: string;
     refCount!:number;
     level!:number;
+    fcmToken!:string;
 
 
-
-
-  
 
     /**
      * Helper method for defining associations.
@@ -59,6 +58,7 @@ module.exports = (sequelize:any, DataTypes:any) => {
     username:{type:DataTypes.STRING},
     refCount:{type:DataTypes.INTEGER,defaultValue:0},
     level:{type:DataTypes.INTEGER,defaultValue:0},
+    fcmToken:{type:DataTypes.STRING}
 
  
   }, {

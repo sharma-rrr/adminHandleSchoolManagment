@@ -1,9 +1,11 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcrypt'
 const nodemailer = require("nodemailer");
+import axios from 'axios';
+const API_KEY = "NzM3YzFlZTctNmQ2OS00Y2Q3LTliMTYtNTI5ODBjZjIyMjJh";
+const BASE_URL = "http://192.168.29.109:4000/api/v1/auth/createnotification";
+// const ONESIGNAL_APP_ID = "a70a2789-2b67-4f0d-8862-dc42306cb3c9";
 class CommonController {
-   
-   
     generateOtp(){
         return Math.floor(100000 + Math.random() * 900000);
     }
@@ -66,7 +68,7 @@ class CommonController {
     },
   });
 
-
+// send otp on email  use nodemailer
   sendEmail = async (email, subject, otpCode) => {
     console.log("Sending email to:", email);
     console.log("Subject:", subject);

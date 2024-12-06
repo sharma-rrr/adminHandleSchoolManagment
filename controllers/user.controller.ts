@@ -57,7 +57,7 @@ async addnewuser(req,res){
 
 
 
-
+    
 
 // forgot password
 async passwordforgot(req,res){
@@ -210,11 +210,10 @@ async sendlink(req,res){
 
 // sign up user 
 async signup(req,res){
-    const{name,email,password,logintype,referralCode} =req.body;
+    const{name,email,password,logintype,referralCode,fcmToken} =req.body;
     try{
-        
         await codeController.signup({
-            name,email,password,logintype,referralCode
+            name,email,password,logintype,referralCode,fcmToken
         },res)
 
     }catch(error){
@@ -223,15 +222,13 @@ async signup(req,res){
 }
 
 
-
+// login user 
 async loginuser (req,res){
-    const{email,password,logintype} =req.body;
+    const{email,password,logintype,fcmToken} =req.body;
     try{
-        
         await codeController.loginuser({
-            email,password,logintype
+            email,password,logintype,fcmToken
         },res)
-
     }catch(error){
         commonController.errorMessage("occured error",res)
     }
@@ -240,26 +237,16 @@ async loginuser (req,res){
 
 
 // verify email with otp value
-async verify  (req,res){
+async verify (req,res){
     const{email, otpValue} =req.body;
     try{
-        
         await codeController.verify({
             email, otpValue,
         },res)
-
     }catch(error){
         commonController.errorMessage("occured error",res)
     }
 }
-
-
-
-
-
-
-
-
 
 
 
@@ -325,7 +312,6 @@ await codeController.getallredeem({
     var email=req?.user?.email
     try{
 await codeController.getTopUser({
-    email  
 },res)
     }catch(error){
         commonController.errorMessage("ocured error",res)
@@ -335,6 +321,8 @@ await codeController.getTopUser({
 
 
 // update image and name
+
+
 async updatedImage(req, res) {
     const { name } = req.body; 
     try {
@@ -376,9 +364,35 @@ async updatedImage(req, res) {
     }
   }
   
+// send notification 
+async sendnotification(req,res){
+    const {heading,message }=req.body;
+    await codeController.sendnotification({
+        heading,message,
+    },res)
+}
 
+async dash(req, res) {
+    try {
+        const { heading, image, imagelink } = req.body;
+        await codeController.dash({ heading, image, imagelink }, res);
+    } catch (error) {
+        // Handle errors if something goes wrong
+        console.error("Error sending notification:", error);
+        res.status(500).json({ message: "Failed to send notification", error });
+    }
+}
 
+// data 
+async data(req:Request,res:Response){
+    try{
+ await codeController.rr({
 
+ },res)
+    }catch(error){
+        commonController.errorMessage("occured error",res)
+    }
+}
 
 
 }

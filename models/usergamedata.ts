@@ -1,8 +1,7 @@
 'use strict';
 import { Model } from 'sequelize';
-
 interface UserGameDataAttributes {
-  userId: string;
+  userId: string; 
   gameId: string;
   points: number;
 }
@@ -25,7 +24,7 @@ module.exports = (sequelize: any, DataTypes: any) => {
     points: {
       type: DataTypes.INTEGER,
       defaultValue: 0,
-    },
+    },  
   }, {
     sequelize,
     modelName: 'UserGames', 

@@ -14,9 +14,7 @@ module.exports = (sequelize: any, DataTypes: any) => {
     message!: string;
     type!: string;
     isRead!: boolean;
-
-   
-  }
+ }
 
   Notification.init({
     heading: {
